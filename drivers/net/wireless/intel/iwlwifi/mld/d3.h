@@ -7,6 +7,7 @@
 
 #include "fw/api/d3.h"
 
+
 struct iwl_mld_rekey_data {
 	bool valid;
 	u8 kck[NL80211_KCK_EXT_LEN];
@@ -34,6 +35,8 @@ struct iwl_mld_wowlan_data {
 	struct iwl_mld_rekey_data rekey_data;
 };
 
+#ifdef CONFIG_PM_SLEEP
+
 int iwl_mld_no_wowlan_resume(struct iwl_mld *mld);
 int iwl_mld_no_wowlan_suspend(struct iwl_mld *mld);
 int iwl_mld_wowlan_suspend(struct iwl_mld *mld,
@@ -42,10 +45,43 @@ int iwl_mld_wowlan_resume(struct iwl_mld *mld);
 void iwl_mld_set_rekey_data(struct ieee80211_hw *hw,
 			    struct ieee80211_vif *vif,
 			    struct cfg80211_gtk_rekey_data *data);
+#else
+
+static inline int iwl_mld_no_wowlan_resume(struct iwl_mld *mld)
+{
+	return 0;
+}
+
+static inline int iwl_mld_no_wowlan_suspend(struct iwl_mld *mld)
+{
+	return 0;
+}
+
+static inline int iwl_mld_wowlan_suspend(struct iwl_mld *mld,
+					  struct cfg80211_wowlan *wowlan)
+{
+	return -EOPNOTSUPP;
+}
+
+static inline int iwl_mld_wowlan_resume(struct iwl_mld *mld)
+{
+	return 0;
+}
+
+static inline void iwl_mld_set_rekey_data(struct ieee80211_hw *hw,
+					  struct ieee80211_vif *vif,
+					  struct cfg80211_gtk_rekey_data *data)
+{
+}
+
+#endif /* CONFIG_PM_SLEEP  */
+
+
 #if IS_ENABLED(CONFIG_IPV6)
 void iwl_mld_ipv6_addr_change(struct ieee80211_hw *hw,
 			      struct ieee80211_vif *vif,
 			      struct inet6_dev *idev);
 #endif
+
 
 #endif /* __iwl_mld_d3_h__ */
